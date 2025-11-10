@@ -1,0 +1,116 @@
+{
+  "schema": {
+    "title": "string (required)",
+    "body": "string (required)",
+    "image": "string (optional, URL)",
+    "type": "string (optional, e.g., order_update, promo)",
+    "click_action": "string (optional, deep link or route)",
+    "data": {
+      "key": "string",
+      "value": "string|number|boolean"
+    },
+    "android": {
+      "channelId": "string (optional)",
+      "priority": "string (optional: min, low, default, high, max)",
+      "ttl": "number (optional, milliseconds)",
+      "color": "string (optional, #RRGGBB)",
+      "sound": "string (optional)"
+    },
+    "ios": {
+      "badge": "number (optional)",
+      "sound": "string (optional)",
+      "category": "string (optional)"
+    }
+  },
+  "samples": {
+    "order_update": {
+      "title": "Your order is out for delivery",
+      "body": "Order #FN-10045 will arrive today between 6–9 PM.",
+      "type": "order_update",
+      "click_action": "/orders/10045",
+      "data": {
+        "orderId": "10045",
+        "screen": "order_detail",
+        "status": "out_for_delivery"
+      },
+      "android": {
+        "channelId": "orders",
+        "priority": "high"
+      },
+      "ios": {
+        "badge": 1,
+        "sound": "default"
+      }
+    },
+    "promo": {
+      "title": "Weekend Offer: 20% OFF",
+      "body": "Use code WEEKEND20 on fruits & juices. Ends Sunday!",
+      "type": "promo",
+      "click_action": "/offers",
+      "data": {
+        "coupon": "WEEKEND20",
+        "screen": "offers"
+      },
+      "android": {
+        "channelId": "promotions",
+        "priority": "default",
+        "ttl": 86400000
+      },
+      "ios": {
+        "badge": 0
+      }
+    },
+    "delivery_delay": {
+      "title": "Delivery delay update",
+      "body": "Order #FN-10045 is running late. New ETA: 8:30–9:30 PM.",
+      "type": "delivery_delay",
+      "click_action": "/orders/10045",
+      "data": {
+        "orderId": "10045",
+        "screen": "order_detail",
+        "status": "delayed",
+        "new_eta": "20:30-21:30"
+      },
+      "android": {
+        "channelId": "orders",
+        "priority": "high"
+      },
+      "ios": {
+        "badge": 1,
+        "sound": "default"
+      }
+    },
+    "payment_success": {
+      "title": "Payment successful",
+      "body": "Your payment of ₹749.00 was successful. Thanks for shopping!",
+      "type": "payment_success",
+      "click_action": "/orders",
+      "data": {
+        "screen": "orders",
+        "amount": "749.00",
+        "currency": "INR"
+      },
+      "android": {
+        "channelId": "payments",
+        "priority": "high"
+      },
+      "ios": {
+        "badge": 0,
+        "sound": "default"
+      }
+    },
+    "cart_reminder": {
+      "title": "Items waiting in your cart",
+      "body": "Finish checkout and save 10% with code VFC10.",
+      "type": "cart",
+      "click_action": "/cart",
+      "data": {
+        "screen": "cart"
+      },
+      "android": {
+        "channelId": "reminders",
+        "priority": "default"
+      }
+    }
+  }
+}
