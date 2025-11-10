@@ -69,7 +69,9 @@ router.post('/products/:id/image', auth, isAdmin, upload.single('image'), async 
     const id = req.params.id;
     const p = await Product.findById(id);
     if (!p) return res.status(404).json({ message: 'Product not found' });
-    p.image = `/uploads/${req.file.filename}`;
+    // Save full public URL for the image so clients can load it immediately
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+    p.image = `${baseUrl}/uploads/${req.file.filename}`;
     await p.save();
     res.json({ product: p });
   } catch (e) {

@@ -63,21 +63,37 @@ router.post('/avatar', auth, avatarUpload.single('avatar'), async (req, res) => 
   if (!req.file) {
     return res.status(400).json({ message: 'No avatar uploaded' });
   }
-
-  const newAvatarPath = `/uploads/${req.file.filename}`;
+  // Determine public base URL: prefer configured BASE_URL, otherwise derive from request
+  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const newAvatarPath = `${baseUrl}/uploads/${req.file.filename}`;
   const diskPath = req.file.path;
   try {
     const previous = req.user.avatarUrl;
     req.user.avatarUrl = newAvatarPath;
     await req.user.save();
 
-    if (previous && typeof previous === 'string' && previous.startsWith('/uploads/')) {
-      const previousPath = path.join(
-        __dirname,
-        '..',
-        previous.replace(/^\//, ''),
-      );
-      fs.unlink(previousPath, () => {});
+    // Remove previous file if it was stored locally in /uploads (either as
+    // a relative path '/uploads/...' or as a full URL that points to our
+    // uploads path). Protect against deleting arbitrary paths.
+    if (previous && typeof previous === 'string') {
+      try {
+        let prevPathname = null;
+        if (previous.startsWith('/uploads/')) {
+          prevPathname = previous;
+        } else if (previous.startsWith(baseUrl)) {
+          // previous might be a full URL like https://host/uploads/xxx
+          const parsed = new URL(previous);
+          if (parsed.pathname && parsed.pathname.startsWith('/uploads/')) {
+            prevPathname = parsed.pathname;
+          }
+        }
+        if (prevPathname) {
+          const previousPath = path.join(__dirname, '..', prevPathname.replace(/^\//, ''));
+          fs.unlink(previousPath, () => {});
+        }
+      } catch (err) {
+        // ignore any URL parsing / fs errors to avoid failing the upload
+      }
     }
 
     return res.json({ ok: true, avatarUrl: req.user.avatarUrl, user: req.user });
