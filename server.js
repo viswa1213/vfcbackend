@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require('path');
+const fs = require('fs');
 
 dotenv.config();
 const app = express();
@@ -43,6 +44,24 @@ app.use("/api/sales", require("./routes/salesRoutes"));
 // Simple health endpoint for mobile diagnostics
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, ts: Date.now(), env: process.env.NODE_ENV || 'development' });
+});
+
+// Diagnostic: list files under the uploads directory. Useful to verify which
+// files are present on a deployed instance (helpful when using ephemeral
+// storage on hosts like Render). This endpoint is intentionally simple and
+// should be removed or protected in production environments.
+app.get('/api/uploads-list', (req, res) => {
+  try {
+    const uploadsDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      return res.json({ ok: true, files: [], count: 0 });
+    }
+    const files = fs.readdirSync(uploadsDir).filter(f => f && f.length > 0);
+    res.json({ ok: true, files, count: files.length });
+  } catch (err) {
+    console.error('Error listing uploads:', err);
+    res.status(500).json({ ok: false, error: String(err) });
+  }
 });
 
 // Serve uploaded images
